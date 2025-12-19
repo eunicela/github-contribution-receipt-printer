@@ -56,14 +56,17 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 0;
-            background:
-                url('assets/paper-texture.png') center/cover no-repeat;
+            height: 500px;
+            background-image: url('assets/paper-texture.png');
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
             box-shadow:
                 2px 2px 8px rgba(0,0,0,0.12),
                 -1px 0 3px rgba(0,0,0,0.04);
             border-radius: 1px;
-            transition: height 0.05s linear;
+            transform: translateY(100%);
+            transition: transform 0.05s linear;
         }
 
 
@@ -467,28 +470,30 @@
         const printingIndicator = document.getElementById('printingIndicator');
 
         let isPrinting = false;
-        let paperHeight = 0;
-        const maxPaperHeight = 500;
-        const printSpeed = 4;
+        let slideProgress = 0;
+        const maxSlide = 100;
+        const printSpeed = 0.8;
 
         function startPrinting() {
             if (isPrinting) return;
 
             isPrinting = true;
-            paperHeight = 0;
-            paper.style.height = '0px';
+            slideProgress = 0;
+            paper.style.transform = 'translateY(100%)';
 
             printButton.disabled = true;
             gear.classList.add('spinning');
             printingIndicator.classList.add('active');
 
-            // Animate paper coming out
+            // Animate paper sliding out
             const printInterval = setInterval(() => {
-                paperHeight += printSpeed;
-                paper.style.height = paperHeight + 'px';
+                slideProgress += printSpeed;
+                const translateValue = 100 - slideProgress;
+                paper.style.transform = `translateY(${translateValue}%)`;
 
-                if (paperHeight >= maxPaperHeight) {
+                if (slideProgress >= maxSlide) {
                     clearInterval(printInterval);
+                    paper.style.transform = 'translateY(0%)';
                     finishPrinting();
                 }
             }, 20);
@@ -510,10 +515,10 @@
         // Reset paper on double-click
         paper.addEventListener('dblclick', () => {
             if (!isPrinting) {
-                paper.style.transition = 'height 0.5s ease-out';
-                paper.style.height = '0px';
+                paper.style.transition = 'transform 0.5s ease-out';
+                paper.style.transform = 'translateY(100%)';
                 setTimeout(() => {
-                    paper.style.transition = 'height 0.05s linear';
+                    paper.style.transition = 'transform 0.05s linear';
                 }, 500);
             }
         });
