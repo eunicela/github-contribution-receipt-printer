@@ -112,23 +112,6 @@
             pointer-events: none;
         }
 
-        /* Torn edge effect */
-        .paper::after {
-            content: '';
-            position: absolute;
-            top: -6px;
-            left: 0;
-            right: 0;
-            height: 12px;
-            background:
-                linear-gradient(135deg, #f7f7f5 33%, transparent 33%) -3px 0,
-                linear-gradient(225deg, #f7f7f5 33%, transparent 33%) -3px 0,
-                linear-gradient(315deg, #f7f7f5 33%, transparent 33%),
-                linear-gradient(45deg, #f7f7f5 33%, transparent 33%);
-            background-size: 8px 12px;
-            background-color: transparent;
-            filter: drop-shadow(0 -1px 1px rgba(0,0,0,0.1));
-        }
 
         /* Main printer body */
         .printer {
