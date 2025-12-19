@@ -35,19 +35,18 @@
         .print-button-wrapper {
             position: fixed;
             top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            right: 30px;
             z-index: 100;
         }
 
         /* Paper coming out - positioned above printer */
         .paper-container {
             position: absolute;
-            top: -350px;
+            top: -500px;
             left: 50%;
             transform: translateX(-50%);
-            width: 280px;
-            height: 350px;
+            width: 320px;
+            height: 500px;
             overflow: hidden;
             z-index: 1;
         }
@@ -112,7 +111,7 @@
                 inset 0 -2px 5px rgba(0,0,0,0.1);
             overflow: visible;
             z-index: 2;
-            margin-bottom: -100px;
+            margin-bottom: -280px;
         }
 
         /* Top section with print head */
@@ -499,8 +498,8 @@
 
         let isPrinting = false;
         let paperHeight = 0;
-        const maxPaperHeight = 350;
-        const printSpeed = 3;
+        const maxPaperHeight = 500;
+        const printSpeed = 4;
 
         function startPrinting() {
             if (isPrinting) return;
