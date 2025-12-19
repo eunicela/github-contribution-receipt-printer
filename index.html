@@ -14,10 +14,11 @@
         body {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-end;
             min-height: 100vh;
             background: linear-gradient(135deg, #e8e4d9 0%, #d4cfc4 100%);
             font-family: 'Courier New', monospace;
+            overflow: hidden;
         }
 
         .container {
@@ -31,14 +32,22 @@
             position: relative;
         }
 
+        .print-button-wrapper {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
         /* Paper coming out - positioned above printer */
         .paper-container {
             position: absolute;
-            top: -200px;
+            top: -350px;
             left: 50%;
             transform: translateX(-50%);
-            width: 180px;
-            height: 200px;
+            width: 280px;
+            height: 350px;
             overflow: hidden;
             z-index: 1;
         }
@@ -92,10 +101,10 @@
         /* Main printer body */
         .printer {
             position: relative;
-            width: 320px;
-            height: 400px;
+            width: 500px;
+            height: 620px;
             background: linear-gradient(145deg, #f0ece3 0%, #e0dcd3 50%, #d5d1c8 100%);
-            border-radius: 15px;
+            border-radius: 20px 20px 0 0;
             box-shadow:
                 0 20px 60px rgba(0,0,0,0.3),
                 0 5px 20px rgba(0,0,0,0.2),
@@ -103,6 +112,7 @@
                 inset 0 -2px 5px rgba(0,0,0,0.1);
             overflow: visible;
             z-index: 2;
+            margin-bottom: -100px;
         }
 
         /* Top section with print head */
@@ -111,9 +121,9 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 80px;
+            height: 120px;
             background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 50%, #2a2a2a 100%);
-            border-radius: 15px 15px 0 0;
+            border-radius: 20px 20px 0 0;
             box-shadow:
                 inset 0 2px 0 rgba(255,255,255,0.1),
                 inset 0 -3px 10px rgba(0,0,0,0.3);
@@ -122,11 +132,11 @@
         /* Paper slot */
         .paper-slot {
             position: absolute;
-            top: 60px;
+            top: 90px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
-            height: 15px;
+            width: 310px;
+            height: 20px;
             background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
             border-radius: 3px;
             box-shadow:
@@ -137,17 +147,17 @@
         /* Metal roller bar */
         .roller-bar {
             position: absolute;
-            top: 45px;
+            top: 68px;
             left: 50%;
             transform: translateX(-50%);
-            width: 220px;
-            height: 12px;
+            width: 340px;
+            height: 18px;
             background: linear-gradient(180deg,
                 #c0c0c0 0%,
                 #e8e8e8 30%,
                 #a0a0a0 70%,
                 #808080 100%);
-            border-radius: 6px;
+            border-radius: 9px;
             box-shadow:
                 0 2px 4px rgba(0,0,0,0.3),
                 inset 0 1px 0 rgba(255,255,255,0.5);
@@ -156,8 +166,8 @@
         /* Screws on roller bar */
         .screw {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 12px;
+            height: 12px;
             background: radial-gradient(circle at 30% 30%, #888 0%, #444 100%);
             border-radius: 50%;
             top: 50%;
@@ -171,24 +181,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 5px;
-            height: 1px;
+            width: 7px;
+            height: 2px;
             background: #222;
         }
 
-        .screw.left { left: 15px; }
-        .screw.right { right: 15px; }
+        .screw.left { left: 20px; }
+        .screw.right { right: 20px; }
 
         /* Paper roll compartment */
         .compartment {
             position: absolute;
-            top: 100px;
+            top: 150px;
             left: 50%;
             transform: translateX(-50%);
-            width: 260px;
-            height: 250px;
+            width: 400px;
+            height: 400px;
             background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
-            border-radius: 10px;
+            border-radius: 15px;
             box-shadow:
                 inset 0 5px 20px rgba(0,0,0,0.8),
                 0 2px 0 rgba(255,255,255,0.1);
@@ -198,11 +208,11 @@
         /* Paper roll */
         .paper-roll-container {
             position: absolute;
-            bottom: 20px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
-            height: 180px;
+            width: 320px;
+            height: 300px;
         }
 
         .paper-roll {
@@ -210,8 +220,8 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 160px;
-            height: 160px;
+            width: 260px;
+            height: 260px;
             background: radial-gradient(circle at center,
                 #333 0%,
                 #333 15%,
@@ -233,8 +243,8 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 180px;
-            height: 100px;
+            width: 280px;
+            height: 160px;
             background: linear-gradient(90deg,
                 #e8e8e8 0%,
                 #fff 20%,
@@ -246,29 +256,29 @@
         /* Side frame rails */
         .side-rail {
             position: absolute;
-            top: 100px;
-            width: 25px;
-            height: 250px;
+            top: 150px;
+            width: 40px;
+            height: 400px;
             background: linear-gradient(90deg, #d0ccc3 0%, #e8e4db 50%, #d0ccc3 100%);
         }
 
         .side-rail.left {
-            left: 5px;
-            border-radius: 5px 0 0 5px;
+            left: 8px;
+            border-radius: 8px 0 0 8px;
         }
 
         .side-rail.right {
-            right: 5px;
-            border-radius: 0 5px 5px 0;
+            right: 8px;
+            border-radius: 0 8px 8px 0;
         }
 
         /* Green indicator light */
         .indicator-light {
             position: absolute;
-            top: 130px;
-            right: 15px;
-            width: 20px;
-            height: 20px;
+            top: 190px;
+            right: 22px;
+            width: 28px;
+            height: 28px;
             background: radial-gradient(circle at 30% 30%,
                 #90ff90 0%,
                 #40c040 40%,
@@ -289,17 +299,17 @@
         /* Wires */
         .wires {
             position: absolute;
-            bottom: 20px;
-            left: -30px;
+            bottom: 80px;
+            left: -45px;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 5px;
         }
 
         .wire {
-            width: 60px;
-            height: 4px;
-            border-radius: 2px;
+            width: 90px;
+            height: 6px;
+            border-radius: 3px;
             transform-origin: right center;
         }
 
@@ -311,11 +321,11 @@
 
         .wires-right {
             position: absolute;
-            bottom: 40px;
-            right: -25px;
+            bottom: 100px;
+            right: -40px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
         }
 
         .wires-right .wire {
@@ -371,11 +381,11 @@
         /* Printing animation indicator */
         .printing-indicator {
             position: absolute;
-            top: 20px;
+            top: 35px;
             left: 50%;
             transform: translateX(-50%);
             color: #fff;
-            font-size: 12px;
+            font-size: 16px;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -393,12 +403,12 @@
         /* Mechanical details */
         .gear {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 45px;
+            height: 45px;
             background: conic-gradient(from 0deg, #555 0deg, #777 20deg, #555 40deg, #777 60deg, #555 80deg, #777 100deg, #555 120deg, #777 140deg, #555 160deg, #777 180deg, #555 200deg, #777 220deg, #555 240deg, #777 260deg, #555 280deg, #777 300deg, #555 320deg, #777 340deg, #555 360deg);
             border-radius: 50%;
-            top: 20px;
-            left: 20px;
+            top: 30px;
+            left: 30px;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
 
@@ -408,8 +418,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 10px;
-            height: 10px;
+            width: 15px;
+            height: 15px;
             background: radial-gradient(circle, #333 0%, #222 100%);
             border-radius: 50%;
         }
@@ -425,6 +435,11 @@
     </style>
 </head>
 <body>
+    <!-- Fixed print button at top -->
+    <div class="print-button-wrapper">
+        <button class="print-button" id="printButton">Print</button>
+    </div>
+
     <div class="container">
         <div class="printer-wrapper">
             <!-- Paper output area -->
@@ -474,8 +489,6 @@
                 </div>
             </div>
         </div>
-
-        <button class="print-button" id="printButton">Print</button>
     </div>
 
     <script>
@@ -486,8 +499,8 @@
 
         let isPrinting = false;
         let paperHeight = 0;
-        const maxPaperHeight = 200;
-        const printSpeed = 2;
+        const maxPaperHeight = 350;
+        const printSpeed = 3;
 
         function startPrinting() {
             if (isPrinting) return;
