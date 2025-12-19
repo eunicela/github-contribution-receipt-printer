@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt Printer</title>
+    <title>GitHub Receipt Printer</title>
     <style>
         * {
             margin: 0;
@@ -32,6 +32,31 @@
             position: relative;
         }
 
+        /* Input section */
+        .input-wrapper {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+
+        .username-input {
+            padding: 12px 20px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #fff;
+            width: 200px;
+        }
+
+        .username-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
         .print-button-wrapper {
             position: fixed;
             top: 30px;
@@ -42,11 +67,11 @@
         /* Paper coming out - positioned above printer */
         .paper-container {
             position: absolute;
-            top: -500px;
+            top: -700px;
             left: 50%;
             transform: translateX(-50%);
             width: 320px;
-            height: 500px;
+            height: 700px;
             overflow: hidden;
             z-index: 1;
         }
@@ -56,11 +81,12 @@
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 500px;
+            height: 700px;
             background-image: url('assets/paper-texture.png');
             background-size: 100% 100%;
             background-position: center;
             background-repeat: no-repeat;
+            background-color: #fafafa;
             box-shadow:
                 2px 2px 8px rgba(0,0,0,0.12),
                 -1px 0 3px rgba(0,0,0,0.04);
@@ -69,6 +95,146 @@
             transition: transform 0.05s linear;
         }
 
+        /* Receipt content styling */
+        .receipt-content {
+            padding: 20px 25px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #1a1a1a;
+            line-height: 1.4;
+        }
+
+        .receipt-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .receipt-subtitle {
+            text-align: center;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .receipt-order-info {
+            margin-bottom: 10px;
+            font-size: 11px;
+        }
+
+        .receipt-divider {
+            border: none;
+            border-top: 1px dashed #333;
+            margin: 10px 0;
+        }
+
+        .receipt-table {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .receipt-table-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+
+        .receipt-table-header span:first-child {
+            width: 30px;
+        }
+
+        .receipt-table-header span:nth-child(2) {
+            flex: 1;
+            padding-left: 10px;
+        }
+
+        .receipt-table-header span:last-child {
+            width: 50px;
+            text-align: right;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin: 8px 0;
+        }
+
+        .receipt-item-qty {
+            width: 30px;
+        }
+
+        .receipt-item-name {
+            flex: 1;
+            padding-left: 10px;
+            word-wrap: break-word;
+            text-transform: uppercase;
+        }
+
+        .receipt-item-value {
+            width: 50px;
+            text-align: right;
+        }
+
+        .receipt-totals {
+            margin-top: 10px;
+        }
+
+        .receipt-total-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin: 3px 0;
+        }
+
+        .receipt-footer {
+            margin-top: 15px;
+            font-size: 10px;
+        }
+
+        .receipt-thank-you {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+
+        .receipt-barcode {
+            text-align: center;
+            margin: 15px 0;
+            font-family: 'Libre Barcode 39', cursive;
+            font-size: 40px;
+            letter-spacing: -2px;
+        }
+
+        .receipt-barcode-fallback {
+            display: flex;
+            justify-content: center;
+            gap: 1px;
+            height: 40px;
+            margin: 15px 0;
+        }
+
+        .receipt-barcode-fallback span {
+            background: #000;
+            width: 2px;
+        }
+
+        .receipt-barcode-fallback span:nth-child(odd) {
+            width: 1px;
+        }
+
+        .receipt-barcode-fallback span:nth-child(3n) {
+            width: 3px;
+        }
+
+        .receipt-website {
+            text-align: center;
+            font-size: 10px;
+            margin-top: 10px;
+        }
 
         /* Main printer body */
         .printer {
@@ -404,19 +570,45 @@
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
         }
+
+        /* Error message */
+        .error-message {
+            position: fixed;
+            top: 80px;
+            left: 30px;
+            background: #ff4444;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            display: none;
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
+    <!-- Username input -->
+    <div class="input-wrapper">
+        <input type="text" class="username-input" id="usernameInput" placeholder="GitHub username" />
+    </div>
+
     <!-- Fixed print button at top -->
     <div class="print-button-wrapper">
         <button class="print-button" id="printButton">Print</button>
     </div>
 
+    <!-- Error message -->
+    <div class="error-message" id="errorMessage"></div>
+
     <div class="container">
         <div class="printer-wrapper">
             <!-- Paper output area -->
             <div class="paper-container">
-                <div class="paper" id="paper"></div>
+                <div class="paper" id="paper">
+                    <div class="receipt-content" id="receiptContent">
+                        <!-- Receipt content will be dynamically inserted -->
+                    </div>
+                </div>
             </div>
 
             <!-- Main printer -->
@@ -468,14 +660,184 @@
         const printButton = document.getElementById('printButton');
         const gear = document.getElementById('gear');
         const printingIndicator = document.getElementById('printingIndicator');
+        const usernameInput = document.getElementById('usernameInput');
+        const receiptContent = document.getElementById('receiptContent');
+        const errorMessage = document.getElementById('errorMessage');
 
         let isPrinting = false;
         let slideProgress = 0;
         const maxSlide = 100;
         const printSpeed = 0.8;
 
-        function startPrinting() {
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 3000);
+        }
+
+        function formatDate(date) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options).toUpperCase();
+        }
+
+        function generateBarcode() {
+            let bars = '';
+            for (let i = 0; i < 50; i++) {
+                bars += `<span style="height: ${20 + Math.random() * 20}px;"></span>`;
+            }
+            return bars;
+        }
+
+        async function fetchGitHubData(username) {
+            try {
+                // Fetch user data
+                const userResponse = await fetch(`https://api.github.com/users/${username}`);
+                if (!userResponse.ok) {
+                    throw new Error('User not found');
+                }
+                const userData = await userResponse.json();
+
+                // Fetch repos (sorted by stars)
+                const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=100`);
+                const reposData = await reposResponse.json();
+
+                // Fetch recent events
+                const eventsResponse = await fetch(`https://api.github.com/users/${username}/events?per_page=100`);
+                const eventsData = await eventsResponse.json();
+
+                // Calculate stats
+                const topRepos = reposData
+                    .filter(repo => !repo.fork)
+                    .sort((a, b) => b.stargazers_count - a.stargazers_count)
+                    .slice(0, 8);
+
+                const totalStars = reposData.reduce((sum, repo) => sum + repo.stargazers_count, 0);
+                const totalForks = reposData.reduce((sum, repo) => sum + repo.forks_count, 0);
+
+                // Count languages
+                const languages = {};
+                reposData.forEach(repo => {
+                    if (repo.language) {
+                        languages[repo.language] = (languages[repo.language] || 0) + 1;
+                    }
+                });
+                const topLanguages = Object.entries(languages)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3);
+
+                // Count commits from events
+                const pushEvents = eventsData.filter(e => e.type === 'PushEvent');
+                const totalCommits = pushEvents.reduce((sum, e) => sum + (e.payload.commits?.length || 0), 0);
+
+                // Count PRs and issues
+                const prEvents = eventsData.filter(e => e.type === 'PullRequestEvent').length;
+                const issueEvents = eventsData.filter(e => e.type === 'IssuesEvent').length;
+
+                return {
+                    user: userData,
+                    topRepos,
+                    totalStars,
+                    totalForks,
+                    topLanguages,
+                    totalCommits,
+                    prEvents,
+                    issueEvents,
+                    repoCount: reposData.length
+                };
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        function renderReceipt(data) {
+            const now = new Date();
+            const orderNum = String(Math.floor(Math.random() * 9999)).padStart(4, '0');
+
+            let reposHtml = '';
+            data.topRepos.forEach((repo, index) => {
+                const repoName = repo.name.length > 22 ? repo.name.substring(0, 22) + '...' : repo.name;
+                reposHtml += `
+                    <div class="receipt-item">
+                        <span class="receipt-item-qty">${String(index + 1).padStart(2, '0')}</span>
+                        <span class="receipt-item-name">${repoName}</span>
+                        <span class="receipt-item-value">${repo.stargazers_count}★</span>
+                    </div>
+                `;
+            });
+
+            const languagesStr = data.topLanguages.map(l => l[0]).join(', ') || 'N/A';
+
+            receiptContent.innerHTML = `
+                <div class="receipt-title">GITHUBTIFY</div>
+                <div class="receipt-subtitle">TOP REPOSITORIES</div>
+
+                <div class="receipt-order-info">
+                    ORDER #${orderNum} FOR ${data.user.name || data.user.login}<br>
+                    ${formatDate(now)}
+                </div>
+
+                <hr class="receipt-divider">
+
+                <div class="receipt-table-header">
+                    <span>QTY</span>
+                    <span>ITEM</span>
+                    <span>★</span>
+                </div>
+
+                <hr class="receipt-divider">
+
+                ${reposHtml}
+
+                <hr class="receipt-divider">
+
+                <div class="receipt-totals">
+                    <div class="receipt-total-line">
+                        <span>REPO COUNT:</span>
+                        <span>${data.repoCount}</span>
+                    </div>
+                    <div class="receipt-total-line">
+                        <span>TOTAL STARS:</span>
+                        <span>${data.totalStars}★</span>
+                    </div>
+                    <div class="receipt-total-line">
+                        <span>TOTAL FORKS:</span>
+                        <span>${data.totalForks}</span>
+                    </div>
+                    <div class="receipt-total-line">
+                        <span>RECENT COMMITS:</span>
+                        <span>${data.totalCommits}</span>
+                    </div>
+                </div>
+
+                <hr class="receipt-divider">
+
+                <div class="receipt-footer">
+                    LANGUAGES: ${languagesStr}<br>
+                    FOLLOWERS: ${data.user.followers}<br>
+                    FOLLOWING: ${data.user.following}<br>
+                    MEMBER SINCE: ${new Date(data.user.created_at).getFullYear()}
+                </div>
+
+                <div class="receipt-thank-you">THANK YOU FOR CODING!</div>
+
+                <div class="receipt-barcode-fallback">
+                    ${generateBarcode()}
+                </div>
+
+                <div class="receipt-website">github.com/${data.user.login}</div>
+            `;
+        }
+
+        async function startPrinting() {
             if (isPrinting) return;
+
+            const username = usernameInput.value.trim();
+            if (!username) {
+                showError('Please enter a GitHub username');
+                return;
+            }
 
             isPrinting = true;
             slideProgress = 0;
@@ -485,18 +847,28 @@
             gear.classList.add('spinning');
             printingIndicator.classList.add('active');
 
-            // Animate paper sliding out
-            const printInterval = setInterval(() => {
-                slideProgress += printSpeed;
-                const translateValue = 100 - slideProgress;
-                paper.style.transform = `translateY(${translateValue}%)`;
+            try {
+                // Fetch GitHub data
+                const data = await fetchGitHubData(username);
+                renderReceipt(data);
 
-                if (slideProgress >= maxSlide) {
-                    clearInterval(printInterval);
-                    paper.style.transform = 'translateY(0%)';
-                    finishPrinting();
-                }
-            }, 20);
+                // Animate paper sliding out
+                const printInterval = setInterval(() => {
+                    slideProgress += printSpeed;
+                    const translateValue = 100 - slideProgress;
+                    paper.style.transform = `translateY(${translateValue}%)`;
+
+                    if (slideProgress >= maxSlide) {
+                        clearInterval(printInterval);
+                        paper.style.transform = 'translateY(0%)';
+                        finishPrinting();
+                    }
+                }, 20);
+            } catch (error) {
+                showError(error.message || 'Failed to fetch GitHub data');
+                finishPrinting();
+                paper.style.transform = 'translateY(100%)';
+            }
         }
 
         function finishPrinting() {
@@ -511,6 +883,13 @@
         }
 
         printButton.addEventListener('click', startPrinting);
+
+        // Allow Enter key to trigger print
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                startPrinting();
+            }
+        });
 
         // Reset paper on double-click
         paper.addEventListener('dblclick', () => {
