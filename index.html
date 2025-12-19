@@ -1024,11 +1024,15 @@
         }
 
         function renderContributionGraph(calendar) {
-            if (!calendar || !calendar.weeks) return '';
+            console.log('renderContributionGraph called with:', calendar);
+            if (!calendar || !calendar.weeks) {
+                console.log('No calendar or weeks data');
+                return '';
+            }
 
             // Take last 20 weeks for the receipt (fits better)
             const weeks = calendar.weeks.slice(-20);
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            console.log('Using', weeks.length, 'weeks');
 
             let graphHtml = '<div class="contribution-title">CONTRIBUTION ACTIVITY</div>';
             graphHtml += '<div class="contribution-graph">';
@@ -1046,6 +1050,7 @@
             graphHtml += '</div>';
             graphHtml += `<div class="contribution-label">${calendar.totalContributions} contributions in the last year</div>`;
 
+            console.log('Generated graph HTML length:', graphHtml.length);
             return graphHtml;
         }
 
@@ -1170,6 +1175,7 @@
             const contributionGraphHtml = data.contributions
                 ? renderContributionGraph(data.contributions)
                 : (accessToken ? '<div class="contribution-title">CONTRIBUTIONS UNAVAILABLE</div>' : '');
+            console.log('contributionGraphHtml:', contributionGraphHtml.substring(0, 200));
 
             receiptContent.innerHTML = `
                 <div class="receipt-title">GITHUBTIFY</div>
