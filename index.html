@@ -701,7 +701,7 @@
         .contribution-graph {
             display: flex;
             gap: 2px;
-            margin: 15px 0;
+            margin: 10px 0;
             justify-content: center;
         }
 
@@ -718,17 +718,123 @@
         }
 
         .contribution-label {
-            font-size: 8px;
+            font-size: 9px;
             text-align: center;
-            margin-top: 5px;
+            margin-top: 8px;
             color: #333;
         }
 
-        .contribution-title {
+        .contribution-section-title {
             text-align: center;
             font-size: 10px;
             margin-bottom: 8px;
             font-weight: bold;
+        }
+
+        /* Big number display */
+        .big-number {
+            text-align: center;
+            padding: 15px 0;
+        }
+
+        .big-number-value {
+            font-size: 48px;
+            font-weight: bold;
+            line-height: 1;
+            letter-spacing: -2px;
+        }
+
+        .big-number-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .big-number-sublabel {
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Stats section */
+        .receipt-stats {
+            margin: 10px 0;
+        }
+
+        .receipt-stat-line {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin: 6px 0;
+        }
+
+        .receipt-stat-line span:last-child {
+            font-weight: bold;
+        }
+
+        /* Productive days section */
+        .productive-section {
+            margin: 10px 0;
+        }
+
+        .productive-title {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .productive-day {
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+            margin: 4px 0;
+            gap: 8px;
+        }
+
+        .productive-day-name {
+            width: 70px;
+        }
+
+        .productive-day-bar {
+            flex: 1;
+            height: 8px;
+            background: #eee;
+            position: relative;
+        }
+
+        .productive-day-fill {
+            height: 100%;
+            background: #333;
+        }
+
+        .productive-day-count {
+            width: 30px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* Peak time */
+        .peak-time {
+            margin: 10px 0;
+        }
+
+        .peak-time-title {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .peak-time-value {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Username subtitle */
+        .receipt-username {
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 15px;
+            color: #666;
         }
     </style>
 </head>
@@ -1013,6 +1119,87 @@
         }
 
         // ===================
+        // Stats Calculation Helpers
+        // ===================
+        function calculateLongestStreak(calendar) {
+            if (!calendar || !calendar.weeks) return 0;
+
+            let longestStreak = 0;
+            let currentStreak = 0;
+
+            calendar.weeks.forEach(week => {
+                week.contributionDays.forEach(day => {
+                    if (day.contributionCount > 0) {
+                        currentStreak++;
+                        longestStreak = Math.max(longestStreak, currentStreak);
+                    } else {
+                        currentStreak = 0;
+                    }
+                });
+            });
+
+            return longestStreak;
+        }
+
+        function calculateProductiveDays(calendar) {
+            if (!calendar || !calendar.weeks) return [];
+
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+            calendar.weeks.forEach(week => {
+                week.contributionDays.forEach(day => {
+                    const date = new Date(day.date);
+                    const dayOfWeek = date.getDay();
+                    dayCounts[dayOfWeek] += day.contributionCount;
+                });
+            });
+
+            const maxCount = Math.max(...dayCounts);
+            const daysWithCounts = dayNames.map((name, index) => ({
+                name,
+                count: dayCounts[index],
+                percentage: maxCount > 0 ? (dayCounts[index] / maxCount) * 100 : 0
+            }));
+
+            // Sort by count descending and take top 3
+            return daysWithCounts.sort((a, b) => b.count - a.count).slice(0, 3);
+        }
+
+        function calculatePeakHours(events) {
+            if (!events || events.length === 0) return null;
+
+            const hourCounts = new Array(24).fill(0);
+
+            events.forEach(event => {
+                if (event.created_at) {
+                    const hour = new Date(event.created_at).getHours();
+                    hourCounts[hour]++;
+                }
+            });
+
+            // Find the peak 3-hour window
+            let maxSum = 0;
+            let peakStart = 0;
+
+            for (let i = 0; i < 24; i++) {
+                const sum = hourCounts[i] + hourCounts[(i + 1) % 24] + hourCounts[(i + 2) % 24];
+                if (sum > maxSum) {
+                    maxSum = sum;
+                    peakStart = i;
+                }
+            }
+
+            const formatHour = (h) => {
+                const hour12 = h % 12 || 12;
+                const ampm = h < 12 ? 'am' : 'pm';
+                return `${hour12}${ampm}`;
+            };
+
+            return `${formatHour(peakStart)} - ${formatHour((peakStart + 3) % 24)}`;
+        }
+
+        // ===================
         // Render Contribution Graph (Vertical)
         // ===================
         function getContributionLevel(count) {
@@ -1024,20 +1211,14 @@
         }
 
         function renderContributionGraph(calendar) {
-            console.log('renderContributionGraph called with:', calendar);
-            if (!calendar || !calendar.weeks) {
-                console.log('No calendar or weeks data');
-                return '';
-            }
+            if (!calendar || !calendar.weeks) return '';
 
             // Take last 20 weeks for the receipt (fits better)
             const weeks = calendar.weeks.slice(-20);
-            console.log('Using', weeks.length, 'weeks');
 
-            let graphHtml = '<div class="contribution-title">CONTRIBUTION ACTIVITY</div>';
-            graphHtml += '<div class="contribution-graph">';
+            let graphHtml = '<div class="contribution-graph">';
 
-            weeks.forEach((week, weekIndex) => {
+            weeks.forEach((week) => {
                 graphHtml += '<div class="contribution-column">';
                 week.contributionDays.forEach(day => {
                     const level = getContributionLevel(day.contributionCount);
@@ -1048,9 +1229,8 @@
             });
 
             graphHtml += '</div>';
-            graphHtml += `<div class="contribution-label">${calendar.totalContributions} contributions in the last year</div>`;
+            graphHtml += `<div class="contribution-label">last 20 weeks</div>`;
 
-            console.log('Generated graph HTML length:', graphHtml.length);
             return graphHtml;
         }
 
@@ -1100,51 +1280,58 @@
             const headers = accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {};
 
             try {
-                const userResponse = await fetch(`https://api.github.com/users/${username}`, { headers });
+                // Fetch user, repos, and events in parallel
+                const [userResponse, reposResponse, eventsResponse] = await Promise.all([
+                    fetch(`https://api.github.com/users/${username}`, { headers }),
+                    fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=100`, { headers }),
+                    fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers })
+                ]);
+
                 if (!userResponse.ok) {
                     throw new Error('User not found');
                 }
-                const userData = await userResponse.json();
 
-                const reposResponse = await fetch(`https://api.github.com/users/${username}/repos?sort=stars&per_page=100`, { headers });
-                const reposData = await reposResponse.json();
+                const [userData, reposData, eventsData] = await Promise.all([
+                    userResponse.json(),
+                    reposResponse.json(),
+                    eventsResponse.json()
+                ]);
 
-                const eventsResponse = await fetch(`https://api.github.com/users/${username}/events?per_page=100`, { headers });
-                const eventsData = await eventsResponse.json();
-
-                const topRepos = reposData
-                    .filter(repo => !repo.fork)
-                    .sort((a, b) => b.stargazers_count - a.stargazers_count)
-                    .slice(0, 8);
-
+                // Calculate total stars
                 const totalStars = reposData.reduce((sum, repo) => sum + repo.stargazers_count, 0);
-                const totalForks = reposData.reduce((sum, repo) => sum + repo.forks_count, 0);
 
+                // Find top language
                 const languages = {};
                 reposData.forEach(repo => {
                     if (repo.language) {
                         languages[repo.language] = (languages[repo.language] || 0) + 1;
                     }
                 });
-                const topLanguages = Object.entries(languages)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3);
+                const topLanguage = Object.entries(languages)
+                    .sort((a, b) => b[1] - a[1])[0];
 
-                const pushEvents = eventsData.filter(e => e.type === 'PushEvent');
-                const totalCommits = pushEvents.reduce((sum, e) => sum + (e.payload.commits?.length || 0), 0);
+                // Count PR events (merged PRs from events)
+                const prEvents = eventsData.filter(e => e.type === 'PullRequestEvent');
+                const mergedPRs = prEvents.filter(e => e.payload?.action === 'closed' && e.payload?.pull_request?.merged).length;
 
                 // Fetch contributions if logged in
                 const contributions = await fetchContributions(username);
 
+                // Calculate stats from contributions
+                const longestStreak = calculateLongestStreak(contributions);
+                const productiveDays = calculateProductiveDays(contributions);
+                const peakTime = calculatePeakHours(eventsData);
+
                 return {
                     user: userData,
-                    topRepos,
                     totalStars,
-                    totalForks,
-                    topLanguages,
-                    totalCommits,
-                    repoCount: reposData.length,
-                    contributions
+                    topLanguage: topLanguage ? topLanguage[0] : 'N/A',
+                    mergedPRs,
+                    longestStreak,
+                    productiveDays,
+                    peakTime,
+                    contributions,
+                    events: eventsData
                 };
             } catch (error) {
                 throw error;
@@ -1158,79 +1345,88 @@
             const now = new Date();
             const orderNum = String(Math.floor(Math.random() * 9999)).padStart(4, '0');
 
-            let reposHtml = '';
-            data.topRepos.forEach((repo, index) => {
-                const repoName = repo.name.length > 22 ? repo.name.substring(0, 22) + '...' : repo.name;
-                reposHtml += `
-                    <div class="receipt-item">
-                        <span class="receipt-item-qty">${String(index + 1).padStart(2, '0')}</span>
-                        <span class="receipt-item-name">${repoName}</span>
-                        <span class="receipt-item-value">${repo.stargazers_count}★</span>
-                    </div>
-                `;
-            });
-
-            const languagesStr = data.topLanguages.map(l => l[0]).join(', ') || 'N/A';
-            console.log('Contributions data:', data.contributions);
+            // Contribution graph HTML
             const contributionGraphHtml = data.contributions
                 ? renderContributionGraph(data.contributions)
-                : (accessToken ? '<div class="contribution-title">CONTRIBUTIONS UNAVAILABLE</div>' : '');
-            console.log('contributionGraphHtml:', contributionGraphHtml.substring(0, 200));
+                : '';
+
+            // Productive days HTML
+            let productiveDaysHtml = '';
+            if (data.productiveDays && data.productiveDays.length > 0) {
+                data.productiveDays.forEach(day => {
+                    productiveDaysHtml += `
+                        <div class="productive-day">
+                            <span class="productive-day-name">${day.name}</span>
+                            <div class="productive-day-bar">
+                                <div class="productive-day-fill" style="width: ${day.percentage}%"></div>
+                            </div>
+                            <span class="productive-day-count">${day.count}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Total contributions
+            const totalContributions = data.contributions?.totalContributions || 0;
 
             receiptContent.innerHTML = `
                 <div class="receipt-title">GITHUBTIFY</div>
-                <div class="receipt-subtitle">TOP REPOSITORIES</div>
+                <div class="receipt-username">@${data.user.login}</div>
 
                 <div class="receipt-order-info">
-                    ORDER #${orderNum} FOR ${data.user.name || data.user.login}<br>
+                    ORDER #${orderNum}<br>
                     ${formatDate(now)}
                 </div>
 
                 <hr class="receipt-divider">
 
-                <div class="receipt-table-header">
-                    <span>QTY</span>
-                    <span>ITEM</span>
-                    <span>★</span>
+                <div class="big-number">
+                    <div class="big-number-value">${totalContributions}</div>
+                    <div class="big-number-label">Contributions</div>
+                    <div class="big-number-sublabel">this year</div>
                 </div>
 
                 <hr class="receipt-divider">
 
-                ${reposHtml}
-
-                <hr class="receipt-divider">
-
-                <div class="receipt-totals">
-                    <div class="receipt-total-line">
-                        <span>REPO COUNT:</span>
-                        <span>${data.repoCount}</span>
+                <div class="receipt-stats">
+                    <div class="receipt-stat-line">
+                        <span>TOP LANGUAGE</span>
+                        <span>${data.topLanguage}</span>
                     </div>
-                    <div class="receipt-total-line">
-                        <span>TOTAL STARS:</span>
-                        <span>${data.totalStars}★</span>
+                    <div class="receipt-stat-line">
+                        <span>STARS EARNED</span>
+                        <span>${data.totalStars}</span>
                     </div>
-                    <div class="receipt-total-line">
-                        <span>TOTAL FORKS:</span>
-                        <span>${data.totalForks}</span>
+                    <div class="receipt-stat-line">
+                        <span>PULL REQUESTS</span>
+                        <span>${data.mergedPRs}</span>
                     </div>
-                    <div class="receipt-total-line">
-                        <span>RECENT COMMITS:</span>
-                        <span>${data.totalCommits}</span>
+                    <div class="receipt-stat-line">
+                        <span>LONGEST STREAK</span>
+                        <span>${data.longestStreak} days</span>
                     </div>
                 </div>
 
                 <hr class="receipt-divider">
 
+                <div class="productive-section">
+                    <div class="productive-title">MOST PRODUCTIVE</div>
+                    ${productiveDaysHtml}
+                </div>
+
+                ${data.peakTime ? `
+                <div class="peak-time">
+                    <div class="peak-time-title">PEAK CODING TIME</div>
+                    <div class="peak-time-value">${data.peakTime}</div>
+                </div>
+                ` : ''}
+
+                <hr class="receipt-divider">
+
+                <div class="contribution-section-title">CONTRIBUTION ACTIVITY</div>
                 ${contributionGraphHtml}
 
-                ${contributionGraphHtml ? '<hr class="receipt-divider">' : ''}
-
-                <div class="receipt-footer">
-                    LANGUAGES: ${languagesStr}<br>
-                    FOLLOWERS: ${data.user.followers}<br>
-                    FOLLOWING: ${data.user.following}<br>
-                    MEMBER SINCE: ${new Date(data.user.created_at).getFullYear()}
-                </div>
+                <hr class="receipt-divider">
 
                 <div class="receipt-thank-you">THANK YOU FOR CODING!</div>
 
