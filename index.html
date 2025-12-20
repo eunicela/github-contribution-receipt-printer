@@ -30,6 +30,11 @@
 
         .printer-wrapper {
             position: relative;
+            transition: transform 0.8s ease-out;
+        }
+
+        .printer-wrapper.slid-down {
+            transform: translateY(500px);
         }
 
         /* Input section */
@@ -936,6 +941,7 @@
         const errorMessage = document.getElementById('errorMessage');
         const paperContainer = document.querySelector('.paper-container');
         const printer = document.querySelector('.printer');
+        const printerWrapper = document.querySelector('.printer-wrapper');
         const loginButton = document.getElementById('loginButton');
         const loginButtonText = document.getElementById('loginButtonText');
         const modalOverlay = document.getElementById('modalOverlay');
@@ -1451,6 +1457,9 @@
 
             calculatePaperHeight();
 
+            // Reset printer position if it was slid down
+            printerWrapper.classList.remove('slid-down');
+
             isPrinting = true;
             slideProgress = 0;
             paper.style.transform = 'translateY(100%)';
@@ -1484,6 +1493,11 @@
         function finishPrinting() {
             gear.classList.remove('spinning');
             printingIndicator.classList.remove('active');
+
+            // Slide the printer down to reveal the full receipt
+            setTimeout(() => {
+                printerWrapper.classList.add('slid-down');
+            }, 300);
 
             setTimeout(() => {
                 isPrinting = false;
