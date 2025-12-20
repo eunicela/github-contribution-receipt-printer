@@ -54,17 +54,16 @@
             z-index: 100;
         }
 
-        /* Paper coming out - positioned above printer */
+        /* Paper coming out - positioned independently */
         .paper-container {
-            position: absolute;
-            bottom: 100%;
+            position: fixed;
+            bottom: var(--printer-top, 340px);
             left: 50%;
             transform: translateX(-50%);
             width: 320px;
             height: var(--paper-height, 500px);
             overflow: hidden;
             z-index: 1;
-            margin-bottom: -30px;
         }
 
         .paper {
@@ -875,16 +874,16 @@
     </div>
 
     <div class="container">
-        <div class="printer-wrapper">
-            <!-- Paper output area -->
-            <div class="paper-container">
-                <div class="paper" id="paper">
-                    <div class="receipt-content" id="receiptContent">
-                        <!-- Receipt content will be dynamically inserted -->
-                    </div>
+        <!-- Paper output area (separate from printer so it stays in place) -->
+        <div class="paper-container" id="paperContainer">
+            <div class="paper" id="paper">
+                <div class="receipt-content" id="receiptContent">
+                    <!-- Receipt content will be dynamically inserted -->
                 </div>
             </div>
+        </div>
 
+        <div class="printer-wrapper">
             <!-- Main printer -->
             <div class="printer">
                 <!-- Top print head section -->
@@ -1246,6 +1245,12 @@
         function calculatePaperHeight() {
             const printerRect = printer.getBoundingClientRect();
             const printerTop = printerRect.top;
+            const windowHeight = window.innerHeight;
+
+            // Position paper container so its bottom aligns with printer top
+            const printerTopFromBottom = windowHeight - printerTop + 30; // +30 to overlap into printer slot
+            document.documentElement.style.setProperty('--printer-top', `${printerTopFromBottom}px`);
+
             const maxHeight = printerTop - 20;
             const paperHeight = Math.min(maxHeight, 700);
             document.documentElement.style.setProperty('--paper-height', `${paperHeight}px`);
