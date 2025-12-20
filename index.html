@@ -64,6 +64,12 @@
             height: var(--paper-height, 500px);
             overflow: hidden;
             z-index: 1;
+            transition: height 0.8s ease-out, bottom 0.8s ease-out;
+        }
+
+        .paper-container.expanded {
+            height: 90vh;
+            bottom: 5vh;
         }
 
         .paper {
@@ -1464,6 +1470,7 @@
 
             // Reset printer position if it was slid down
             printerWrapper.classList.remove('slid-down');
+            paperContainer.classList.remove('expanded');
 
             isPrinting = true;
             slideProgress = 0;
@@ -1499,9 +1506,10 @@
             gear.classList.remove('spinning');
             printingIndicator.classList.remove('active');
 
-            // Slide the printer down to reveal the full receipt
+            // Slide the printer down and expand paper to reveal the full receipt
             setTimeout(() => {
                 printerWrapper.classList.add('slid-down');
+                paperContainer.classList.add('expanded');
             }, 300);
 
             setTimeout(() => {
